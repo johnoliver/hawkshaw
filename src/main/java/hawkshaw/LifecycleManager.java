@@ -8,13 +8,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class LifecycleManager<T> {
+public class LifecycleManager {
 
     private final RandomProducer rp;
 
-    private final Map<String, T> cache = new HashMap<>();
+    private final Map<String, Object> cache = new HashMap<>();
 
-    private final ScheduledExecutorService stpe = Executors.newScheduledThreadPool(4);
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
 
     private static final int SCALING_FACTOR = 1000;
 
@@ -22,11 +22,11 @@ public class LifecycleManager<T> {
         rp = rp_;
     }
 
-    public void cacheForRandomTime(T t) {
-        Callable<Void> clb = cacheWithRandomKey(t);
+    public void cacheForRandomTime(Object o) {
+        Callable<Void> clb = cacheWithRandomKey(o);
 
         int ttl = (int) (SCALING_FACTOR * rp.millisToLive());
-        stpe.schedule(clb, ttl, TimeUnit.MILLISECONDS);
+        executor.schedule(clb, ttl, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -51,20 +51,23 @@ public class LifecycleManager<T> {
      * 
      * Returns a handle which will remove the object again (which may be useful for scheduling for future execution).
      * 
-     * @param t
+     * @param o
      * @return
      */
-    private Callable<Void> cacheWithRandomKey(T t) {
+    private Callable<Void> cacheWithRandomKey(Object o) {
         // Generate a UUID String
         // This will generate garbage - 1 UUID object each time we put an
         // object into the cache
         String uuid = UUID.randomUUID().toString();
 
-        // Put in the cache
-        cache.put(uuid, t);
+        cache.put(uuid, o);
 
         // Generate a cache cleaner (to be externally scheduled)
-        return this.new CacheCleaner(uuid);
+        return new CacheCleaner(uuid);
+    }
+
+    public void shutdown() {
+        executor.shutdown();
     }
 
 }

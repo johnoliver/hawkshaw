@@ -4,23 +4,17 @@ import hawkshaw.GammaDistProducer;
 import hawkshaw.LifecycleManager;
 import hawkshaw.RandomProducer;
 
-import java.util.UUID;
-
 public class SimpleMain {
-
-    private LifecycleManager<String> lcm;
 
     private void run() throws InterruptedException {
         RandomProducer rp = GammaDistProducer.of(1234567, 5.0, 2.0);
         System.out.println("Starting LCM");
-        lcm = new LifecycleManager<>(rp);
+        LifecycleManager manager = new LifecycleManager(rp);
         for (int i = 0; i < 1_000_000; i++) {
-            lcm.cacheForRandomTime(UUID.randomUUID().toString());
+            manager.cacheForRandomTime(Integer.toString(i));
         }
+        manager.shutdown();
         System.out.println("All enqueued");
-        Thread.sleep(10_000);
-        System.out.println("Done");
-
     }
 
     public static void main(String[] args) throws InterruptedException {
