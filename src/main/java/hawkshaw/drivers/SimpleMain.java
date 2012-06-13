@@ -1,19 +1,19 @@
 package hawkshaw.drivers;
 
-import hawkshaw.GammaDistProducer;
-import hawkshaw.LifecycleManager;
-import hawkshaw.RandomProducer;
+import hawkshaw.ConstantThrottle;
+import hawkshaw.GammaDistThrottle;
+import hawkshaw.ManagedCache;
+import hawkshaw.Throttle;
 
 public class SimpleMain {
 
     private void run() throws InterruptedException {
-        RandomProducer rp = GammaDistProducer.of(1234567, 5.0, 2.0);
+        //        Throttle createAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
+        Throttle createAt = new ConstantThrottle(0.0);
+        Throttle deleteAt = GammaDistThrottle.of(1234567, 5.0, 2.0);
         System.out.println("Starting LCM");
-        LifecycleManager manager = new LifecycleManager(rp);
-        for (int i = 0; i < 1_000_000; i++) {
-            manager.cacheForRandomTime(Integer.toString(i));
-        }
-        manager.shutdown();
+        ManagedCache manager = new ManagedCache(createAt, deleteAt);
+        manager.randomlyAllocateToCache(1_500_000);
         System.out.println("All enqueued");
     }
 

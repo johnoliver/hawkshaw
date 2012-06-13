@@ -6,24 +6,24 @@ import cern.jet.random.engine.MersenneTwister;
 /**
  * Produces pseudo-random number as per the Gamma random number distribution
  */
-public class GammaDistProducer implements RandomProducer {
+public class GammaDistThrottle implements Throttle {
 
     private final MersenneTwister mt;
 
     // p(x) = k * x^(alpha-1) * e^(-x/beta)
     private final Gamma gpdf;
 
-    private GammaDistProducer(int mtSeed, double a, double b) {
+    private GammaDistThrottle(int mtSeed, double alpha, double beta) {
         mt = new MersenneTwister(mtSeed);
-        gpdf = new Gamma(a, b, mt);
+        gpdf = new Gamma(alpha, beta, mt);
     }
 
-    public static GammaDistProducer of(int mtSeed, double a, double b) {
-        return new GammaDistProducer(mtSeed, a, b);
+    public static GammaDistThrottle of(int mtSeed, double alpha, double beta) {
+        return new GammaDistThrottle(mtSeed, alpha, beta);
     }
 
     @Override
-    public double millisToLive() {
+    public double millisTillEvent() {
         return gpdf.nextDouble();
     }
 
