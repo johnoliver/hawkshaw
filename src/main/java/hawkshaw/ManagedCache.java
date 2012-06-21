@@ -63,14 +63,23 @@ public class ManagedCache {
             cache.remove(key);
 
             int remainingRemovals = toRemove.decrementAndGet();
-            //            if (remainingRemovals % 100 == 0) {
-            //                System.out.println(remainingRemovals);
-            //            }
+
             if (remainingRemovals == 0) {
                 executor.shutdown();
+                ManagedCache.this.notifyAll();
             }
 
             return null;
         }
+    }
+    
+    public synchronized void join() {
+    	while(!executor.isTerminated()) {
+    		try {
+				this.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    	}
     }
 }
