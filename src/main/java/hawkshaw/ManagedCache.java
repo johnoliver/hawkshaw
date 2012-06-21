@@ -1,5 +1,7 @@
 package hawkshaw;
 
+import hawkshaw.throttles.Throttle;
+
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.UUID;
@@ -10,8 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ManagedCache {
-
-    private static final int SCALING_FACTOR = 1000;
 
     private final Map<String, Object> cache;
     private final ScheduledExecutorService executor;
@@ -27,7 +27,7 @@ public class ManagedCache {
         cache = new Hashtable<>();
     }
 
-    public void randomlyAllocateToCache(int numberOfObjects) {
+    public void startAllocation(int numberOfObjects) {
         toRemove = new AtomicInteger(numberOfObjects);
         for (int i = 0; i < numberOfObjects; i++) {
             scheduleBy(new ProduceKey(), productionThrottle);
@@ -35,7 +35,7 @@ public class ManagedCache {
     }
 
     private void scheduleBy(Callable<?> task, Throttle throttle) {
-        int ttl = (int) (SCALING_FACTOR * throttle.millisTillEvent());
+        int ttl = throttle.millisTillEvent();
         executor.schedule(task, ttl, TimeUnit.MILLISECONDS);
     }
 
@@ -45,7 +45,6 @@ public class ManagedCache {
             // TODO: stop using uuids
             String uuid = UUID.randomUUID().toString();
             cache.put(uuid, uuid);
-            //            System.out.println("Allocating: "+uuid);
             scheduleBy(new RemoveKey(uuid), collectionThrottle);
             return null;
         }
@@ -72,14 +71,14 @@ public class ManagedCache {
             return null;
         }
     }
-    
+
     public synchronized void join() {
-    	while(!executor.isTerminated()) {
-    		try {
-				this.wait(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-    	}
+        while (!executor.isTerminated()) {
+            try {
+                this.wait(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
