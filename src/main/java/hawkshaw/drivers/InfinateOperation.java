@@ -5,21 +5,27 @@ import hawkshaw.throttles.ConstantThrottle;
 import hawkshaw.throttles.GammaDistThrottle;
 import hawkshaw.throttles.Throttle;
 
-public class SimpleMain {
+public class InfinateOperation {
 
     private static final int LEAK_SIZE_IN_BYTES = 4;
 
     private void run() throws InterruptedException {
+        // create at a constant rate
         Throttle createAt = new ConstantThrottle(0);
-        Throttle deleteAt = GammaDistThrottle.of(1234567, 5.0, 2.0);
+
+        // remove at a constant rate
+        Throttle deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
         System.out.println("Starting LCM");
-        ManagedCache manager = new ManagedCache(createAt, deleteAt, LEAK_SIZE_IN_BYTES);
-        manager.startAllocation(1500000);
-        System.out.println("All enqueued");
+        while (true) {
+            ManagedCache manager = new ManagedCache(createAt, deleteAt, LEAK_SIZE_IN_BYTES);
+            manager.startAllocation(500000);
+            System.out.println("All enqueued");
+            Thread.sleep(2000);
+        }
     }
 
     public static void main(String[] args) throws InterruptedException {
-        SimpleMain sm = new SimpleMain();
+        InfinateOperation sm = new InfinateOperation();
         sm.run();
     }
 

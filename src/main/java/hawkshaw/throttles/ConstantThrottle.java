@@ -1,15 +1,15 @@
-package hawkshaw;
+package hawkshaw.throttles;
 
 public class ConstantThrottle implements Throttle {
 
-    private final double value;
+    private final int value;
 
-    public ConstantThrottle(double value) {
+    public ConstantThrottle(int value) {
         this.value = value;
     }
 
     @Override
-    public double millisTillEvent() {
+    public int millisTillEvent() {
         return value;
     }
 
