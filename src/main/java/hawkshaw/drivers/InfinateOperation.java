@@ -15,11 +15,10 @@ public class InfinateOperation {
         Throttle deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
         System.out.println("Starting LCM");
         while (true) {
-            ManagedCache manager = new ManagedCache(createAt, deleteAt,4);
-            manager.startAllocation(500_000);
+            ManagedCache manager = new ManagedCache(createAt, deleteAt, 4);
+            manager.startAllocation(500000);
             System.out.println("All enqueued");
             Thread.sleep(2000);
-
         }
     }
 

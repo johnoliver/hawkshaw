@@ -26,7 +26,7 @@ public class ManagedCache {
         this.productionThrottle = productionThrottle;
         this.cacheEntryVolume = cacheEntryVolume;
         executor = Executors.newScheduledThreadPool(4);
-        cache = new Hashtable<>();
+        cache = new Hashtable<String, byte[]>();
     }
 
     public void startAllocation(int numberOfObjects) {

@@ -50,7 +50,7 @@ public class Leaker {
             Throttle deleteAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 1.0, 2.0);
 
             ManagedCache manager = new ManagedCache(deleteAt, createAt, 1024);
-            manager.startAllocation(50_000);
+            manager.startAllocation(50000);
             manager.join();
             now = new BigInteger(Long.toString(System.currentTimeMillis()));
         }
