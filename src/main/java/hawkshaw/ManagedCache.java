@@ -13,16 +13,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ManagedCache {
 
-    private final Map<String, Object> cache;
+    private final Map<String, byte[]> cache;
     private final ScheduledExecutorService executor;
     private final Throttle productionThrottle;
     private final Throttle collectionThrottle;
 
     private AtomicInteger toRemove;
+    private int cacheEntryVolume;
 
-    public ManagedCache(Throttle collectionThrottle, Throttle productionThrottle) {
+    public ManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int cacheEntryVolume) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
+        this.cacheEntryVolume = cacheEntryVolume;
         executor = Executors.newScheduledThreadPool(4);
         cache = new Hashtable<>();
     }
@@ -44,7 +46,7 @@ public class ManagedCache {
         public Void call() throws Exception {
             // TODO: stop using uuids
             String uuid = UUID.randomUUID().toString();
-            cache.put(uuid, uuid);
+            cache.put(uuid, new byte[cacheEntryVolume]);
             scheduleBy(new RemoveKey(uuid), collectionThrottle);
             return null;
         }
