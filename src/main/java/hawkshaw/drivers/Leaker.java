@@ -33,7 +33,6 @@ public class Leaker {
         Throttle deleteAt = new NeverThrottle();
         System.out.println("Starting Leaker");
 
-        // use DualThreadedManagedCache so as not to create an enormous number of runnables
         leaker = new DualThreadedManagedCache(deleteAt, createAt, leakVolume);
 
         // leak a large number of objects
@@ -66,6 +65,8 @@ public class Leaker {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        //TODO sanitise args, issue #4
+
         long runTime = Long.MAX_VALUE;
         int leakRate = 1*1024*1024;// default to 4 kb a second
 

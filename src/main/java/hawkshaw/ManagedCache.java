@@ -44,7 +44,6 @@ public class ManagedCache {
     private class ProduceKey implements Callable<Void> {
         @Override
         public Void call() throws Exception {
-            // TODO: stop using uuids
             String uuid = UUID.randomUUID().toString();
             cache.put(uuid, new byte[cacheEntryVolume]);
             scheduleBy(new RemoveKey(uuid), collectionThrottle);

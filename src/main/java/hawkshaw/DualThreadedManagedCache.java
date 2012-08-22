@@ -8,7 +8,7 @@ import java.util.UUID;
 
 /**
  * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled runables for allocating/deallocating
- *
+ * 
  * For this cache the throttles control the time between each allocation/deallocation
  */
 public class DualThreadedManagedCache {
@@ -58,6 +58,7 @@ public class DualThreadedManagedCache {
                         wait(productionThrottle.millisTillEvent());
                     }
                 } catch (InterruptedException e) {
+                    //Deliberately ignore Exception
                 }
 
                 if (!isRunning()) {
@@ -124,7 +125,6 @@ public class DualThreadedManagedCache {
             producer.join();
             collector.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }
