@@ -13,29 +13,35 @@ import java.util.UUID;
  */
 public class DualThreadedManagedCache {
 
-    private final Map<String, Object> cache;
+    private final Map<String, byte[]> cache;
     private final Throttle productionThrottle;
     private final Throttle collectionThrottle;
     private Thread producer;
     private Thread collector;
 
-    public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle) {
+    private boolean running = false;
+    private int entryVolume;
+
+    public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
-        cache = new Hashtable<>();
+        this.entryVolume = entryVolume;
+        cache = new Hashtable<String, byte[]>();
     }
 
     public void startAllocation(int numberOfObjects) {
         producer = new ProduceKey(numberOfObjects, productionThrottle);
         collector = new RemoveKey(collectionThrottle);
 
+        setRunning(true);
+
         producer.start();
         collector.start();
     }
 
     private class ProduceKey extends Thread {
-        private int numToProduce;
-        private Throttle productionThrottle;
+        private final int numToProduce;
+        private final Throttle productionThrottle;
 
         public ProduceKey(int numToProduce, Throttle productionThrottle) {
             this.numToProduce = numToProduce;
@@ -46,18 +52,24 @@ public class DualThreadedManagedCache {
         public void run() {
             for (int i = 0; i < numToProduce; i++) {
                 String uuid = UUID.randomUUID().toString();
-                cache.put(uuid, uuid);
+                cache.put(uuid, new byte[entryVolume]);
                 try {
-                    Thread.sleep(productionThrottle.millisTillEvent());
+                    synchronized (this) {
+                        wait(productionThrottle.millisTillEvent());
+                    }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    //Deliberately ignore Exception
+                }
+
+                if (!isRunning()) {
+                    return;
                 }
             }
         }
     }
 
     private class RemoveKey extends Thread {
-        private Throttle removeThrottle;
+        private final Throttle removeThrottle;
 
         public RemoveKey(Throttle removeThrottle) {
             this.removeThrottle = removeThrottle;
@@ -73,6 +85,10 @@ public class DualThreadedManagedCache {
                     cache.remove(keys[toRemove]);
                 }
 
+                if (!isRunning()) {
+                    return;
+                }
+
                 if (cache.size() == 0) {
                     if (!producer.isAlive()) {
                         return;
@@ -80,11 +96,35 @@ public class DualThreadedManagedCache {
                 }
 
                 try {
-                    Thread.sleep(removeThrottle.millisTillEvent());
+                    synchronized (this) {
+                        wait(removeThrottle.millisTillEvent());
+                    }
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
+        }
+    }
+
+    private synchronized boolean isRunning() {
+        return running;
+    }
+
+    private synchronized void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    public void terminate() {
+        setRunning(false);
+        try {
+            synchronized (producer) {
+                producer.notifyAll();
+            }
+            synchronized (collector) {
+                collector.notifyAll();
+            }
+            producer.join();
+            collector.join();
+        } catch (InterruptedException e) {
         }
     }
 }

@@ -7,6 +7,8 @@ import hawkshaw.throttles.Throttle;
 
 public class InfinateOperation {
 
+    private static final int LEAK_SIZE_IN_BYTES = 4;
+
     private void run() throws InterruptedException {
         // create at a constant rate
         Throttle createAt = new ConstantThrottle(0);
@@ -15,11 +17,10 @@ public class InfinateOperation {
         Throttle deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
         System.out.println("Starting LCM");
         while (true) {
-            ManagedCache manager = new ManagedCache(createAt, deleteAt);
-            manager.startAllocation(500_000);
+            ManagedCache manager = new ManagedCache(createAt, deleteAt, LEAK_SIZE_IN_BYTES);
+            manager.startAllocation(500000);
             System.out.println("All enqueued");
             Thread.sleep(2000);
-
         }
     }
 
