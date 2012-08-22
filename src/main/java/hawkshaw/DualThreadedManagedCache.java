@@ -8,7 +8,7 @@ import java.util.UUID;
 
 /**
  * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled runables for allocating/deallocating
- * 
+ *
  * For this cache the throttles control the time between each allocation/deallocation
  */
 public class DualThreadedManagedCache {
@@ -22,7 +22,7 @@ public class DualThreadedManagedCache {
     public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
-        cache = new Hashtable<>();
+        cache = new Hashtable<String, Object>();
     }
 
     public void startAllocation(int numberOfObjects) {
@@ -34,8 +34,8 @@ public class DualThreadedManagedCache {
     }
 
     private class ProduceKey extends Thread {
-        private int numToProduce;
-        private Throttle productionThrottle;
+        private final int numToProduce;
+        private final Throttle productionThrottle;
 
         public ProduceKey(int numToProduce, Throttle productionThrottle) {
             this.numToProduce = numToProduce;
@@ -57,7 +57,7 @@ public class DualThreadedManagedCache {
     }
 
     private class RemoveKey extends Thread {
-        private Throttle removeThrottle;
+        private final Throttle removeThrottle;
 
         public RemoveKey(Throttle removeThrottle) {
             this.removeThrottle = removeThrottle;

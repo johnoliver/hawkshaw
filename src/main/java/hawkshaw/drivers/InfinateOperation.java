@@ -16,10 +16,9 @@ public class InfinateOperation {
         System.out.println("Starting LCM");
         while (true) {
             ManagedCache manager = new ManagedCache(createAt, deleteAt);
-            manager.startAllocation(500_000);
+            manager.startAllocation(500000);
             System.out.println("All enqueued");
             Thread.sleep(2000);
-
         }
     }
 
