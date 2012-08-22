@@ -13,21 +13,21 @@ public class Leaker {
 
     private long runTime;
     DualThreadedManagedCache leaker;
-    private int leakRate;
+    private int leakRate; // In bytes per second
 
     public Leaker(long runTime, int leakRate) {
         this.runTime = runTime;
-        this.leakRate = leakRate;// in bytes per second
+        this.leakRate = leakRate;
     }
 
     // A thread that sits in the background leaking
     private void createLeaker() {
-        int leakPeriod = 50;// in ms
+        int leakPeriodInMilliSec = 50;
 
-        int leakVolume = leakRate / (1000 / leakPeriod);// in bytes per ms
+        int leakVolume = leakRate / (1000 / leakPeriodInMilliSec);// in bytes per ms
 
         // create at a constant rate
-        Throttle createAt = new ConstantThrottle(leakPeriod);
+        Throttle createAt = new ConstantThrottle(leakPeriodInMilliSec);
 
         // never remove
         Throttle deleteAt = new NeverThrottle();
@@ -39,7 +39,7 @@ public class Leaker {
         leaker.startAllocation(Integer.MAX_VALUE);
     }
 
-    // creates non-leaking churn of objects
+    // Creates non-leaking churn of objects
     private void executeChurner() {
 
         BigInteger now = new BigInteger(Long.toString(System.currentTimeMillis()));
@@ -55,23 +55,20 @@ public class Leaker {
         }
     }
 
-    private void run() throws InterruptedException {
-        // make a process that leaks
+    private void run() {
         createLeaker();
         executeChurner();
-
         leaker.terminate();
-
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        //TODO sanitise args, issue #4
+    // TODO sanitise args, issue #3
+    public static void main(String[] args) {
 
         long runTime = Long.MAX_VALUE;
-        int leakRate = 1*1024*1024;// default to 4 kb a second
+        int leakRate = 1 * 1024 * 1024; // default to 4Kb/s
 
         if (args.length != 0) {
-            runTime = Long.parseLong(args[0])*1000;
+            runTime = Long.parseLong(args[0]) * 1000;
             leakRate = Integer.parseInt(args[1]);
         }
         Leaker sm = new Leaker(runTime, leakRate);

@@ -13,13 +13,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ManagedCache {
 
-    private final Map<String, byte[]> cache;
-    private final ScheduledExecutorService executor;
+    final Map<String, byte[]> cache;
+    final ScheduledExecutorService executor;
     private final Throttle productionThrottle;
-    private final Throttle collectionThrottle;
+    final Throttle collectionThrottle;
 
-    private AtomicInteger toRemove;
-    private int cacheEntryVolume;
+    AtomicInteger toRemove;
+    int cacheEntryVolume;
 
     public ManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int cacheEntryVolume) {
         this.collectionThrottle = collectionThrottle;
@@ -36,12 +36,12 @@ public class ManagedCache {
         }
     }
 
-    private void scheduleBy(Callable<?> task, Throttle throttle) {
+    void scheduleBy(Callable<?> task, Throttle throttle) {
         int ttl = throttle.millisTillEvent();
         executor.schedule(task, ttl, TimeUnit.MILLISECONDS);
     }
 
-    private class ProduceKey implements Callable<Void> {
+    class ProduceKey implements Callable<Void> {
         @Override
         public Void call() throws Exception {
             String uuid = UUID.randomUUID().toString();
