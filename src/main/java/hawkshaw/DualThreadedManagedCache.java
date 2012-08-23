@@ -7,20 +7,21 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled runables for allocating/deallocating
+ * A managed cache that is harder to control the allocation rate but does not 
+ * produce a significant number of scheduled Runnables for allocating/deallocating
  * 
  * For this cache the throttles control the time between each allocation/deallocation
  */
 public class DualThreadedManagedCache {
 
-    private final Map<String, byte[]> cache;
+    final Map<String, byte[]> cache;
     private final Throttle productionThrottle;
     private final Throttle collectionThrottle;
-    private Thread producer;
+    Thread producer;
     private Thread collector;
 
     private boolean running = false;
-    private int entryVolume;
+    int entryVolume;
 
     public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
         this.collectionThrottle = collectionThrottle;
@@ -58,7 +59,7 @@ public class DualThreadedManagedCache {
                         wait(productionThrottle.millisTillEvent());
                     }
                 } catch (InterruptedException e) {
-                    //Deliberately ignore Exception
+                    // Deliberately ignore Exception
                 }
 
                 if (!isRunning()) {
@@ -100,12 +101,13 @@ public class DualThreadedManagedCache {
                         wait(removeThrottle.millisTillEvent());
                     }
                 } catch (InterruptedException e) {
+                    // Deliberately ignore Exception
                 }
             }
         }
     }
 
-    private synchronized boolean isRunning() {
+    synchronized boolean isRunning() {
         return running;
     }
 
@@ -125,6 +127,7 @@ public class DualThreadedManagedCache {
             producer.join();
             collector.join();
         } catch (InterruptedException e) {
+            // Deliberately ignore Exception
         }
     }
 }

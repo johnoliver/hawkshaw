@@ -2,6 +2,6 @@ package hawkshaw.throttles;
 
 public interface Throttle {
 
-    int millisTillEvent();
+    public int millisTillEvent();
 
 }
