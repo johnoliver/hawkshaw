@@ -19,7 +19,7 @@ public class DualThreadedManagedCache {
     Thread producer;
     private Thread collector;
 
-    private boolean running = false;
+    private volatile boolean running = false;
     int entryVolume;
 
     public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
