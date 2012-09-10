@@ -2,35 +2,34 @@ package hawkshaw;
 
 import hawkshaw.throttles.Throttle;
 
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.UUID;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * A managed cache that is harder to control the allocation rate but does not 
- * produce a significant number of scheduled Runnables for allocating/deallocating
+ * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled Runnables for allocating/deallocating
  * 
  * For this cache the throttles control the time between each allocation/deallocation
  */
 public class DualThreadedManagedCache {
 
-    final Map<String, byte[]> cache;
+    final List<byte[]> cache;
     private final Throttle productionThrottle;
     private final Throttle collectionThrottle;
     Thread producer;
     private Thread collector;
 
-    private boolean running = false;
+    private volatile boolean running = false;
     int entryVolume;
 
     public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
         this.entryVolume = entryVolume;
-        cache = new Hashtable<String, byte[]>();
+        cache = Collections.synchronizedList(new LinkedList<byte[]>());
     }
 
-    public void startAllocation(int numberOfObjects) {
+    public void startAllocation(long numberOfObjects) {
         producer = new ProduceKey(numberOfObjects, productionThrottle);
         collector = new RemoveKey(collectionThrottle);
 
@@ -41,26 +40,19 @@ public class DualThreadedManagedCache {
     }
 
     private class ProduceKey extends Thread {
-        private final int numToProduce;
+        private final long numToProduce;
         private final Throttle productionThrottle;
 
-        public ProduceKey(int numToProduce, Throttle productionThrottle) {
+        public ProduceKey(long numToProduce, Throttle productionThrottle) {
             this.numToProduce = numToProduce;
             this.productionThrottle = productionThrottle;
         }
 
         @Override
         public void run() {
-            for (int i = 0; i < numToProduce; i++) {
-                String uuid = UUID.randomUUID().toString();
-                cache.put(uuid, new byte[entryVolume]);
-                try {
-                    synchronized (this) {
-                        wait(productionThrottle.millisTillEvent());
-                    }
-                } catch (InterruptedException e) {
-                    // Deliberately ignore Exception
-                }
+            for (long i = 0; i < numToProduce; i++) {
+                cache.add(new byte[entryVolume]);
+                performWait(productionThrottle);
 
                 if (!isRunning()) {
                     return;
@@ -79,11 +71,10 @@ public class DualThreadedManagedCache {
         @Override
         public void run() {
             while (true) {
-                // remove a random one
-                Object[] keys = cache.keySet().toArray();
-                if (keys.length > 0) {
-                    int toRemove = (int) (Math.random() * keys.length);
-                    cache.remove(keys[toRemove]);
+                // remove random one
+                if (cache.size() > 0) {
+                    int index = (int) (Math.random()*cache.size());
+                    cache.remove(index);
                 }
 
                 if (!isRunning()) {
@@ -96,33 +87,37 @@ public class DualThreadedManagedCache {
                     }
                 }
 
-                try {
-                    synchronized (this) {
-                        wait(removeThrottle.millisTillEvent());
-                    }
-                } catch (InterruptedException e) {
-                    // Deliberately ignore Exception
-                }
+                performWait(removeThrottle);
             }
         }
     }
 
-    synchronized boolean isRunning() {
+    private void performWait(Throttle throttle) {
+        try {
+            int waitTime = throttle.millisTillEvent();
+            if (waitTime > 0) {
+                synchronized (this) {
+                    wait(waitTime);
+                }
+            }
+        } catch (InterruptedException e) {
+            // Deliberately ignore Exception
+        }
+    }
+
+    boolean isRunning() {
         return running;
     }
 
-    private synchronized void setRunning(boolean running) {
+    private void setRunning(boolean running) {
         this.running = running;
     }
 
     public void terminate() {
         setRunning(false);
         try {
-            synchronized (producer) {
-                producer.notifyAll();
-            }
-            synchronized (collector) {
-                collector.notifyAll();
+            synchronized (this) {
+                this.notifyAll();
             }
             producer.join();
             collector.join();
