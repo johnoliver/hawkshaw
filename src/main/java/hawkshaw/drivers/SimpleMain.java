@@ -18,7 +18,7 @@ public class SimpleMain {
         Throttle createAt = new ConstantThrottle(0);
         Throttle deleteAt = GammaDistThrottle.of(1234567, 5.0, 2.0);
         LOGGER.debug("Starting LCM");
-        ManagedCache manager = new ManagedCache(createAt, deleteAt, LEAK_SIZE_IN_BYTES);
+        ManagedCache manager = new ManagedCache(deleteAt, createAt, LEAK_SIZE_IN_BYTES);
         manager.startAllocation(1500000);
         LOGGER.debug("All enqueued");
     }

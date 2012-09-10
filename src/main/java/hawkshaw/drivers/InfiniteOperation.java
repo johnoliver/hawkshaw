@@ -18,7 +18,7 @@ public class InfiniteOperation {
         Throttle deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
         System.out.println("Starting LCM");
         while (true) {
-            ManagedCache manager = new ManagedCache(createAt, deleteAt, LEAK_SIZE_IN_BYTES);
+            ManagedCache manager = new ManagedCache(deleteAt, createAt, LEAK_SIZE_IN_BYTES);
             manager.startAllocation(DEFAULT_ALLOCATION_SIZE);
             System.out.println("All enqueued");
             Thread.sleep(PERIOD_IN_MILLISECONDS);
