@@ -13,14 +13,14 @@ import java.util.List;
  */
 public class DualThreadedManagedCache {
 
-    final List<byte[]> cache;
+    private final List<byte[]> cache;
     private final Throttle productionThrottle;
     private final Throttle collectionThrottle;
-    Thread producer;
+    private Thread producer;
     private Thread collector;
 
     private volatile boolean running = false;
-    int entryVolume;
+    private int entryVolume;
 
     public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
         this.collectionThrottle = collectionThrottle;

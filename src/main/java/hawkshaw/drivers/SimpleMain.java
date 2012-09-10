@@ -27,4 +27,6 @@ public class SimpleMain {
         run(1500000);
     }
 
+    private SimpleMain() {}
+
 }
