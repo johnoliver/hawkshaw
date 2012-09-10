@@ -1,5 +1,6 @@
 package hawkshaw.throttles;
 
+import hawkshaw.drivers.GcChurner;
 import hawkshaw.drivers.SimpleMain;
 
 import java.lang.management.GarbageCollectorMXBean;
@@ -13,14 +14,21 @@ import org.junit.Test;
 public class CheckGCTest {
 
     @Test
-    public void checkAllocationCausesGC() {
+    public void checkManagedCacheAllocationCausesGC() {
         GarbageCollectorMXBean bean = getGCMBean();
         long beforeCount = bean.getCollectionCount();
         SimpleMain.run(1000000);
         long afterCount = bean.getCollectionCount();
-
         Assert.assertTrue(afterCount > beforeCount);
+    }
 
+    @Test
+    public void checkDualThreadedManagedCacheAllocationCausesGC() {
+        GarbageCollectorMXBean bean = getGCMBean();
+        long beforeCount = bean.getCollectionCount();
+        GcChurner.run(10);
+        long afterCount = bean.getCollectionCount();
+        Assert.assertTrue(afterCount > beforeCount);
     }
 
     private static GarbageCollectorMXBean getGCMBean() {

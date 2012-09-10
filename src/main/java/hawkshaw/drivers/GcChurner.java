@@ -11,16 +11,17 @@ public class GcChurner {
     private static final int PRODUCTION_PERIOD_IN_MS = 20;
     private static final int LEAK_SIZE_IN_BYTES = 1024 * 1024;
 
-    public static void run() {
+    public static void run(long numObjectsToallocate) {
         Throttle createAt = new ConstantThrottle(PRODUCTION_PERIOD_IN_MS);
         Throttle deleteAt = new ConstantInitialPauseThrottle(TIME_BEFORE_COLLECTION_STARTS_IN_MS, PRODUCTION_PERIOD_IN_MS);
         DualThreadedManagedCache manager = new DualThreadedManagedCache(deleteAt, createAt, LEAK_SIZE_IN_BYTES);
 
-        manager.startAllocation(Long.MAX_VALUE);
+        manager.startAllocation(numObjectsToallocate);
+        manager.join();
     }
 
     public static void main(String[] args) {
-        run();
+        run(Long.MAX_VALUE);
     }
 
 }

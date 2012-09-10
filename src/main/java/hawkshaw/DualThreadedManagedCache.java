@@ -113,16 +113,20 @@ public class DualThreadedManagedCache {
         this.running = running;
     }
 
-    public void terminate() {
-        setRunning(false);
+    public void join() {
         try {
-            synchronized (this) {
-                this.notifyAll();
-            }
             producer.join();
             collector.join();
         } catch (InterruptedException e) {
             // Deliberately ignore Exception
         }
+    }
+
+    public void terminate() {
+        setRunning(false);
+        synchronized (this) {
+            this.notifyAll();
+        }
+        join();
     }
 }
