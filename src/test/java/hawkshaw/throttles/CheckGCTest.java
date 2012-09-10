@@ -27,7 +27,7 @@ public class CheckGCTest {
     public void checkDualThreadedManagedCacheAllocationCausesGC() {
         GarbageCollectorMXBean bean = getGCMBean();
         long beforeCount = bean.getCollectionCount();
-        GcChurner.run(40);
+        GcChurner.run(100, 10000, 1024 * 1024, 1);
         long afterCount = bean.getCollectionCount();
         Assert.assertTrue(afterCount > beforeCount);
     }
