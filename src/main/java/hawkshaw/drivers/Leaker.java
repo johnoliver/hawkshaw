@@ -2,6 +2,9 @@ package hawkshaw.drivers;
 
 import java.math.BigInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import hawkshaw.DualThreadedManagedCache;
 import hawkshaw.ManagedCache;
 import hawkshaw.throttles.ConstantThrottle;
@@ -11,8 +14,9 @@ import hawkshaw.throttles.Throttle;
 
 public class Leaker {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Leaker.class); 
     private long runTime;
-    DualThreadedManagedCache leaker;
+    private DualThreadedManagedCache leaker;
     private int leakRate; // In bytes per second
 
     public Leaker(long runTime, int leakRate) {
@@ -31,7 +35,7 @@ public class Leaker {
 
         // never remove
         Throttle deleteAt = new NeverThrottle();
-        System.out.println("Starting Leaker");
+        LOGGER.debug("Starting Leaker");
 
         leaker = new DualThreadedManagedCache(deleteAt, createAt, leakVolume);
 

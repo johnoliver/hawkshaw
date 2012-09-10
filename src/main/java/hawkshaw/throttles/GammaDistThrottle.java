@@ -6,7 +6,7 @@ import cern.jet.random.engine.MersenneTwister;
 /**
  * Produces pseudo-random number as per the Gamma random number distribution
  */
-public class GammaDistThrottle implements Throttle {
+public final class GammaDistThrottle implements Throttle {
 
     private static final int SCALING_FACTOR = 1000;
     private final MersenneTwister mt;
