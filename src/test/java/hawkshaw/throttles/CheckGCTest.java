@@ -29,6 +29,7 @@ public class CheckGCTest {
         GcChurner.run(40);
         long afterCount = bean.getCollectionCount();
         Assert.assertTrue(afterCount > beforeCount);
+        System.out.println(afterCount+" "+beforeCount);
     }
 
     private static GarbageCollectorMXBean getGCMBean() {
