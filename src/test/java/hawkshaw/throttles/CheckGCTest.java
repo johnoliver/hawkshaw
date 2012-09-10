@@ -5,14 +5,14 @@ import hawkshaw.drivers.SimpleMain;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-
-import javax.management.MBeanServer;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 public class CheckGCTest {
 
+    @SuppressWarnings("static-method")
     @Test
     public void checkManagedCacheAllocationCausesGC() {
         GarbageCollectorMXBean bean = getGCMBean();
@@ -22,6 +22,7 @@ public class CheckGCTest {
         Assert.assertTrue(afterCount > beforeCount);
     }
 
+    @SuppressWarnings("static-method")
     @Test
     public void checkDualThreadedManagedCacheAllocationCausesGC() {
         GarbageCollectorMXBean bean = getGCMBean();
@@ -33,9 +34,13 @@ public class CheckGCTest {
 
     private static GarbageCollectorMXBean getGCMBean() {
         try {
-            MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-            GarbageCollectorMXBean bean = ManagementFactory.newPlatformMXBeanProxy(server, "java.lang:type=GarbageCollector,name=PS MarkSweep", GarbageCollectorMXBean.class);
-            return bean;
+            List<GarbageCollectorMXBean> beans = ManagementFactory.getGarbageCollectorMXBeans();
+            for (GarbageCollectorMXBean bean:beans) {
+                if (bean.getName().toLowerCase().contains("marksweep")) {
+                    return bean;
+                }
+            }
+            throw new Exception();
         } catch (RuntimeException re) {
             throw re;
         } catch (Exception exp) {
