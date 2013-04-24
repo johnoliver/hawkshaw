@@ -52,7 +52,7 @@ public class DualThreadedManagedCache {
         public void run() {
             for (long i = 0; i < numToProduce; i++) {
                 cache.add(new byte[entryVolume]);
-                performWait(productionThrottle);
+                performWait(productionThrottle, this);
 
                 if (!isRunning()) {
                     return;
@@ -87,17 +87,18 @@ public class DualThreadedManagedCache {
                     }
                 }
 
-                performWait(removeThrottle);
+                performWait(removeThrottle, this);
             }
         }
     }
 
-    private void performWait(Throttle throttle) {
+    private void performWait(Throttle throttle, Object lock) {
         try {
             int waitTime = throttle.millisTillEvent();
             if (waitTime > 0) {
-                synchronized (this) {
-                    wait(waitTime);
+                synchronized (lock) {
+                    //wait(waitTime);
+                    lock.wait(0, waitTime);
                 }
             }
         } catch (InterruptedException e) {

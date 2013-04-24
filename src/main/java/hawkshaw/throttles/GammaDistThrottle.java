@@ -13,19 +13,25 @@ public final class GammaDistThrottle implements Throttle {
 
     // p(x) = k * x^(alpha-1) * e^(-x/beta)
     private final Gamma gpdf;
+	private double scale;
 
-    private GammaDistThrottle(int mtSeed, double alpha, double beta) {
+    private GammaDistThrottle(int mtSeed, double alpha, double beta, double scale) {
         mt = new MersenneTwister(mtSeed);
         gpdf = new Gamma(alpha, beta, mt);
+        this.scale = scale;
     }
 
     public static GammaDistThrottle of(int mtSeed, double alpha, double beta) {
-        return new GammaDistThrottle(mtSeed, alpha, beta);
+        return new GammaDistThrottle(mtSeed, alpha, beta, SCALING_FACTOR);
+    }
+    
+    public static GammaDistThrottle of(int mtSeed, double alpha, double beta, double scale) {
+        return new GammaDistThrottle(mtSeed, alpha, beta, scale);
     }
 
     @Override
     public int millisTillEvent() {
-        return (int) (SCALING_FACTOR * gpdf.nextDouble());
+        return (int) (scale * gpdf.nextDouble());
     }
 
 }
