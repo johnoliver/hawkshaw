@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import hawkshaw.ManagedCache;
 import hawkshaw.throttles.ConstantThrottle;
 import hawkshaw.throttles.GammaDistThrottle;
-import hawkshaw.throttles.Throttle;
+import hawkshaw.throttles.NumberProducer;
 
 public class InfiniteOperation {
 
@@ -17,10 +17,10 @@ public class InfiniteOperation {
     private static final int LEAK_SIZE_IN_BYTES = 4;
 
     private static void run() throws InterruptedException {
-        Throttle createAt = new ConstantThrottle(0);
+        NumberProducer createAt = new ConstantThrottle(0);
 
         // Remove at a constant rate
-        Throttle deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
+        NumberProducer deleteAt = GammaDistThrottle.of(1234567, 2.0, 2.0);
         LOGGER.debug("Starting LCM");
         while (true) {
             ManagedCache manager = new ManagedCache(deleteAt, createAt, LEAK_SIZE_IN_BYTES);

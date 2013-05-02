@@ -3,7 +3,7 @@ package hawkshaw.throttles;
 import cern.jet.random.Uniform;
 import cern.jet.random.engine.MersenneTwister;
 
-public final class BurstyThrottle implements Throttle {
+public final class BurstyThrottle implements NumberProducer {
 
 	private static final int SCALING_FACTOR = 1000;
 	private final MersenneTwister mt;
@@ -21,7 +21,7 @@ public final class BurstyThrottle implements Throttle {
 	}
 
 	@Override
-	public int millisTillEvent() {
+	public int next() {
 		int scaling = SCALING_FACTOR;
 		if (burstCount > 0) {
 			burstCount--;
@@ -29,6 +29,7 @@ public final class BurstyThrottle implements Throttle {
 
 		} else {
 			if (burstProbability.nextDouble() > 95) {
+				System.out.println("burst");
 				burstCount = burstLengthProbability.nextInt();
 			}
 		}

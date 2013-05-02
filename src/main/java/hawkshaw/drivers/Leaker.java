@@ -10,7 +10,7 @@ import hawkshaw.ManagedCache;
 import hawkshaw.throttles.ConstantThrottle;
 import hawkshaw.throttles.GammaDistThrottle;
 import hawkshaw.throttles.NeverThrottle;
-import hawkshaw.throttles.Throttle;
+import hawkshaw.throttles.NumberProducer;
 
 public class Leaker {
 
@@ -31,10 +31,10 @@ public class Leaker {
         int leakVolume = leakRate / (1000 / leakPeriodInMilliSec);// in bytes per ms
 
         // create at a constant rate
-        Throttle createAt = new ConstantThrottle(leakPeriodInMilliSec);
+        NumberProducer createAt = new ConstantThrottle(leakPeriodInMilliSec);
 
         // never remove
-        Throttle deleteAt = new NeverThrottle();
+        NumberProducer deleteAt = new NeverThrottle();
         LOGGER.debug("Starting Leaker");
 
         leaker = new DualThreadedManagedCache(deleteAt, createAt, leakVolume);
@@ -49,8 +49,8 @@ public class Leaker {
         BigInteger now = new BigInteger(Long.toString(System.currentTimeMillis()));
         BigInteger end = now.add(new BigInteger(Long.toString(runTime)));
         while (now.compareTo(end) < 0) {
-            Throttle createAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 2.0, 2.0);
-            Throttle deleteAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 1.0, 2.0);
+            NumberProducer createAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 2.0, 2.0);
+            NumberProducer deleteAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 1.0, 2.0);
 
             ManagedCache manager = new ManagedCache(deleteAt, createAt, 1024);
             manager.startAllocation(50000);

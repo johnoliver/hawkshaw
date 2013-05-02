@@ -3,7 +3,7 @@ package hawkshaw.throttles;
 import cern.jet.random.Uniform;
 import cern.jet.random.engine.MersenneTwister;
 
-public final class WhiteThrottle implements Throttle {
+public final class WhiteThrottle implements NumberProducer {
 
 	private static final int SCALING_FACTOR = 1000;
 	private final MersenneTwister mt;
@@ -25,7 +25,7 @@ public final class WhiteThrottle implements Throttle {
 	}
 
 	@Override
-	public int millisTillEvent() {
+	public int next() {
 		return (int) (scale * uniform.nextDouble());
 	}
 

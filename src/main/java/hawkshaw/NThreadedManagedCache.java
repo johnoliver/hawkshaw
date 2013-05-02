@@ -1,6 +1,6 @@
 package hawkshaw;
 
-import hawkshaw.throttles.Throttle;
+import hawkshaw.throttles.NumberProducer;
 
 import java.util.Map;
 import java.util.UUID;
@@ -11,86 +11,86 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled Runnables for allocating/deallocating
+ * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled Runnables for allocating
  * 
  * For this cache the throttles control the time between each allocation/deallocation
  */
 public class NThreadedManagedCache {
 
     final Map<String, byte[]> cache;
-    private final Throttle productionThrottle;
-    private final Throttle collectionThrottle;
+    private final NumberProducer productionThrottle;
+    private final NumberProducer collectionThrottle;
     private ScheduledExecutorService executors;
 
     private volatile boolean running = false;
-    private Throttle sizeThrottle;
-	private int numThreads;
+    private NumberProducer sizeDistribution;
+    private int numThreads;
 
-    public NThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, Throttle sizeThrottle, int numThreads) {
+    public NThreadedManagedCache(NumberProducer collectionThrottle, NumberProducer productionThrottle, NumberProducer sizeDistribution, int numThreads) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
-        this.sizeThrottle = sizeThrottle;
+        this.sizeDistribution = sizeDistribution;
         this.numThreads = numThreads;
         cache = new ConcurrentHashMap<String, byte[]>();
     }
 
-	public void startAllocation(long numObjects) {
-		setRunning(true);
+    public void startAllocation(long numObjects) {
+        setRunning(true);
 
-		executors = Executors.newScheduledThreadPool(4);
-		for (int i = 0; i < numThreads; i++) {
-			executors.execute(new ProduceKey(productionThrottle, numObjects));
-		}
+        executors = Executors.newScheduledThreadPool(4);
+        for (int i = 0; i < numThreads; i++) {
+            executors.execute(new ProduceKey(productionThrottle, numObjects));
+        }
 
-	}
+    }
 
-	public void startAllocation() {
-		startAllocation(Long.MAX_VALUE);
-	}
+    public void startAllocation() {
+        startAllocation(Long.MAX_VALUE);
+    }
 
-    void scheduleBy(Callable<?> task, Throttle throttle) {
-        int ttl = throttle.millisTillEvent();
+    void scheduleBy(Callable<?> task, NumberProducer throttle) {
+        int ttl = throttle.next();
         executors.schedule(task, ttl, TimeUnit.NANOSECONDS);
     }
 
-	private class ProduceKey implements Runnable {
-		private final Throttle productionThrottle;
-		private long numObjects;
+    private class ProduceKey implements Runnable {
+        private final NumberProducer productionThrottle;
+        private long numObjects;
 
-		public ProduceKey(Throttle productionThrottle, long numObjects) {
-			this.productionThrottle = productionThrottle;
-			this.numObjects = numObjects;
-		}
+        public ProduceKey(NumberProducer productionThrottle, long numObjects) {
+            this.productionThrottle = productionThrottle;
+            this.numObjects = numObjects;
+        }
 
-		@Override
-		public void run() {
-			while (isRunning() && numObjects > 0 ) {
-				String uuid = UUID.randomUUID().toString();
-				cache.put(uuid, new byte[sizeThrottle.millisTillEvent()]);
-				scheduleBy(new RemoveKey(uuid), collectionThrottle);
-				numObjects--;
-				performWait(productionThrottle, this);
-			}
-		}
-	}
+        @Override
+        public void run() {
+            while (isRunning() && numObjects > 0 ) {
+                String uuid = UUID.randomUUID().toString();
+                cache.put(uuid, new byte[sizeDistribution.next()]);
+                scheduleBy(new RemoveKey(uuid), collectionThrottle);
+                numObjects--;
+                performWait(productionThrottle, this);
+            }
+        }
+    }
 
     private class RemoveKey implements Callable<Void> {
-		private String key;
+        private String key;
 
         public RemoveKey(String key) {
             this.key = key;
         }
 
-		@Override
-		public Void call() throws Exception {
-			cache.remove(key);
-			return null;
-		}
+        @Override
+        public Void call() throws Exception {
+            cache.remove(key);
+            return null;
+        }
     }
 
-    private void performWait(Throttle throttle, Object lock) {
+    private void performWait(NumberProducer throttle, Object lock) {
         try {
-            int waitTime = throttle.millisTillEvent();
+            int waitTime = throttle.next();
             if (waitTime > 0) {
                 synchronized (lock) {
                     lock.wait(0, waitTime);

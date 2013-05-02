@@ -1,6 +1,6 @@
 package hawkshaw;
 
-import hawkshaw.throttles.Throttle;
+import hawkshaw.throttles.NumberProducer;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -14,15 +14,15 @@ import java.util.List;
 public class DualThreadedManagedCache {
 
     private final List<byte[]> cache;
-    private final Throttle productionThrottle;
-    private final Throttle collectionThrottle;
+    private final NumberProducer productionThrottle;
+    private final NumberProducer collectionThrottle;
     private Thread producer;
     private Thread collector;
 
     private volatile boolean running = false;
     private int entryVolume;
 
-    public DualThreadedManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int entryVolume) {
+    public DualThreadedManagedCache(NumberProducer collectionThrottle, NumberProducer productionThrottle, int entryVolume) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
         this.entryVolume = entryVolume;
@@ -41,9 +41,9 @@ public class DualThreadedManagedCache {
 
     private class ProduceKey extends Thread {
         private final long numToProduce;
-        private final Throttle productionThrottle;
+        private final NumberProducer productionThrottle;
 
-        public ProduceKey(long numToProduce, Throttle productionThrottle) {
+        public ProduceKey(long numToProduce, NumberProducer productionThrottle) {
             this.numToProduce = numToProduce;
             this.productionThrottle = productionThrottle;
         }
@@ -62,9 +62,9 @@ public class DualThreadedManagedCache {
     }
 
     private class RemoveKey extends Thread {
-        private final Throttle removeThrottle;
+        private final NumberProducer removeThrottle;
 
-        public RemoveKey(Throttle removeThrottle) {
+        public RemoveKey(NumberProducer removeThrottle) {
             this.removeThrottle = removeThrottle;
         }
 
@@ -92,12 +92,11 @@ public class DualThreadedManagedCache {
         }
     }
 
-    private void performWait(Throttle throttle, Object lock) {
+    private void performWait(NumberProducer throttle, Object lock) {
         try {
-            int waitTime = throttle.millisTillEvent();
+            int waitTime = throttle.next();
             if (waitTime > 0) {
                 synchronized (lock) {
-                    //wait(waitTime);
                     lock.wait(0, waitTime);
                 }
             }

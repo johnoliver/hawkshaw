@@ -1,6 +1,6 @@
 package hawkshaw.throttles;
 
-public class ConstantThrottle implements Throttle {
+public class ConstantThrottle implements NumberProducer {
 
     private final int value;
 
@@ -9,7 +9,7 @@ public class ConstantThrottle implements Throttle {
     }
 
     @Override
-    public int millisTillEvent() {
+    public int next() {
         return value;
     }
 

@@ -1,6 +1,6 @@
 package hawkshaw;
 
-import hawkshaw.throttles.Throttle;
+import hawkshaw.throttles.NumberProducer;
 
 import java.util.Hashtable;
 import java.util.Map;
@@ -15,13 +15,13 @@ public class ManagedCache {
 
     final Map<String, byte[]> cache;
     final ScheduledExecutorService executor;
-    private final Throttle productionThrottle;
-    final Throttle collectionThrottle;
+    private final NumberProducer productionThrottle;
+    final NumberProducer collectionThrottle;
 
     AtomicInteger toRemove;
     int cacheEntryVolume;
 
-    public ManagedCache(Throttle collectionThrottle, Throttle productionThrottle, int cacheEntryVolume) {
+    public ManagedCache(NumberProducer collectionThrottle, NumberProducer productionThrottle, int cacheEntryVolume) {
         this.collectionThrottle = collectionThrottle;
         this.productionThrottle = productionThrottle;
         this.cacheEntryVolume = cacheEntryVolume;
@@ -36,8 +36,8 @@ public class ManagedCache {
         }
     }
 
-    void scheduleBy(Callable<?> task, Throttle throttle) {
-        int ttl = throttle.millisTillEvent();
+    void scheduleBy(Callable<?> task, NumberProducer throttle) {
+        int ttl = throttle.next();
         executor.schedule(task, ttl, TimeUnit.MILLISECONDS);
     }
 

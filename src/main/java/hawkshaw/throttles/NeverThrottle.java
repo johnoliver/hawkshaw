@@ -1,12 +1,12 @@
 package hawkshaw.throttles;
 
-public class NeverThrottle implements Throttle {
+public class NeverThrottle implements NumberProducer {
 
     public NeverThrottle() {
     }
 
     @Override
-    public int millisTillEvent() {
+    public int next() {
         return Integer.MAX_VALUE;
     }
 

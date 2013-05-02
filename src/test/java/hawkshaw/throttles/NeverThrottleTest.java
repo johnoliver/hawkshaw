@@ -11,8 +11,8 @@ public class NeverThrottleTest {
     @SuppressWarnings("static-method")
     @Test
     public void throttlingWillEffectivelyNeverOccur() {
-        Throttle neverThrottle = new NeverThrottle();
-        assertEquals(OVER_TWO_BILLION_MILLISECONDS, neverThrottle.millisTillEvent());
+        NumberProducer neverThrottle = new NeverThrottle();
+        assertEquals(OVER_TWO_BILLION_MILLISECONDS, neverThrottle.next());
     }
 
 }
