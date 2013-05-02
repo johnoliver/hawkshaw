@@ -1,12 +1,12 @@
 package hawkshaw.throttles;
 
 
-public final class TimedThrottle implements NumberProducer {
+public final class TimedNumberProducer implements NumberProducer {
 
 	private long time;
 	private NumberProducer throttle;
 
-	public TimedThrottle(NumberProducer throttle, long time) {
+	public TimedNumberProducer(NumberProducer throttle, long time) {
 		this.throttle = throttle;
 		this.time = time;
 

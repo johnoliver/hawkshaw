@@ -1,11 +1,11 @@
 package hawkshaw.drivers;
 
 import hawkshaw.NThreadedManagedCache;
-import hawkshaw.throttles.CycleTimedThrottle;
-import hawkshaw.throttles.NeverThrottle;
-import hawkshaw.throttles.SinThrottle;
-import hawkshaw.throttles.TimedThrottle;
-import hawkshaw.throttles.WhiteThrottle;
+import hawkshaw.throttles.TimedCycle;
+import hawkshaw.throttles.LongTime;
+import hawkshaw.throttles.Sin;
+import hawkshaw.throttles.TimedNumberProducer;
+import hawkshaw.throttles.WhiteDist;
 
 /**
  * For low throughput:
@@ -20,29 +20,27 @@ import hawkshaw.throttles.WhiteThrottle;
  */
 public class LowThroughput extends ComposableDriver {
 
-    private static int seed = 123;
-
     private void neutralThrottle() {
-        managers.add( new NThreadedManagedCache(    new WhiteThrottle(seed++, 0, 100),
-                                                    new WhiteThrottle(seed++, 0, 100), 
-                                                    new WhiteThrottle(333, 1, 1, MBYTE),
+        managers.add( new NThreadedManagedCache(    new WhiteDist(seed++, 0, 100),
+                                                    new WhiteDist(seed++, 0, 100), 
+                                                    new WhiteDist(333, 1, 1, MBYTE),
                                                     1));
     }
 
     private void sin() {
-        managers.add( new NThreadedManagedCache(new SinThrottle(seed++, 0, 1000, 1000) ,
-                                                new SinThrottle(seed++, Math.PI, 1000, 1000) , 
-                                                new WhiteThrottle(seed++,  5, 10, MBYTE),
+        managers.add( new NThreadedManagedCache(new Sin(seed++, 0, 1000, 1000) ,
+                                                new Sin(seed++, Math.PI, 1000, 1000) , 
+                                                new WhiteDist(seed++,  5, 10, MBYTE),
                                                 2));
     }
 
     private void steadyState() {
-        TimedThrottle warmup = new TimedThrottle(new WhiteThrottle(seed++, 0, 100), 100000);
-        TimedThrottle steady = new TimedThrottle(new NeverThrottle(), Long.MAX_VALUE);
+        TimedNumberProducer warmup = new TimedNumberProducer(new WhiteDist(seed++, 0, 100), 100000);
+        TimedNumberProducer steady = new TimedNumberProducer(new LongTime(), Long.MAX_VALUE);
 
-        managers.add( new NThreadedManagedCache(    new NeverThrottle(),
-                                                    new CycleTimedThrottle(warmup, steady),
-                                                    new WhiteThrottle(seed++, 50, 100, KBYTE),
+        managers.add( new NThreadedManagedCache(    new LongTime(),
+                                                    new TimedCycle(warmup, steady),
+                                                    new WhiteDist(seed++, 50, 100, KBYTE),
                                                     1));
     }
 
@@ -61,4 +59,10 @@ public class LowThroughput extends ComposableDriver {
         sin();
     }
 
+    public LowThroughput() {
+    }
+
+    public LowThroughput(long timeLimit) {
+        super(timeLimit);
+    }
 }

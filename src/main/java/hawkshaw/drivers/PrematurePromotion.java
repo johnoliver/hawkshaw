@@ -1,7 +1,7 @@
 package hawkshaw.drivers;
 
 import hawkshaw.NThreadedManagedCache;
-import hawkshaw.throttles.WhiteThrottle;
+import hawkshaw.throttles.WhiteDist;
 
 
 /**
@@ -25,12 +25,12 @@ import hawkshaw.throttles.WhiteThrottle;
 public class PrematurePromotion extends ComposableDriver {
 
     private void constantVolume() {
-        WhiteThrottle remove = new WhiteThrottle(seed++, 1, 2, 1000000);
-        WhiteThrottle enqueue = new WhiteThrottle(seed++, 1, 2, 1);
+        WhiteDist remove = new WhiteDist(seed++, 1, 2, 1000000);
+        WhiteDist enqueue = new WhiteDist(seed++, 1, 2, 1);
 
         managers.add( new NThreadedManagedCache(remove, 
                                                 enqueue,
-                                                new WhiteThrottle(seed++,  320, 400, KBYTE),
+                                                new WhiteDist(seed++,  320, 400, KBYTE),
                                                 2));
     }
 

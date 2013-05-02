@@ -1,7 +1,7 @@
 package hawkshaw.throttles;
 
 
-public final class SinThrottle implements NumberProducer {
+public final class Sin implements NumberProducer {
 
 	private double scale;
 
@@ -9,7 +9,7 @@ public final class SinThrottle implements NumberProducer {
 
 	private double current;
 
-	public SinThrottle(int mtSeed, double offset, int period, double scale) {
+	public Sin(int mtSeed, double offset, int period, double scale) {
 		this.step = 2.0 * Math.PI / (double) period;
 		this.scale = scale;
 		this.current = offset;

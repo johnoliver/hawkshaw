@@ -1,10 +1,10 @@
 package hawkshaw.throttles;
 
-public class ConstantThrottle implements NumberProducer {
+public class Constant implements NumberProducer {
 
     private final int value;
 
-    public ConstantThrottle(int value) {
+    public Constant(int value) {
         this.value = value;
     }
 

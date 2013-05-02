@@ -1,6 +1,6 @@
 package hawkshaw.throttles;
 
-import hawkshaw.drivers.GcChurner;
+import hawkshaw.drivers.LowThroughput;
 import hawkshaw.drivers.SimpleMain;
 
 import java.lang.management.GarbageCollectorMXBean;
@@ -24,10 +24,12 @@ public class CheckGCTest {
 
     @SuppressWarnings("static-method")
     @Test
-    public void checkDualThreadedManagedCacheAllocationCausesGC() {
+    public void checkDualThreadedManagedCacheAllocationCausesGC() throws InterruptedException {
         GarbageCollectorMXBean bean = getGCMBean();
         long beforeCount = bean.getCollectionCount();
-        GcChurner.run(100, 10000, 1024 * 1024, 1);
+        Thread driver = new Thread(new LowThroughput(10000L));
+        driver.start();
+        driver.join();
         long afterCount = bean.getCollectionCount();
         Assert.assertTrue(afterCount > beforeCount);
     }

@@ -1,8 +1,8 @@
 package hawkshaw.throttles;
 
-public class NeverThrottle implements NumberProducer {
+public class LongTime implements NumberProducer {
 
-    public NeverThrottle() {
+    public LongTime() {
     }
 
     @Override

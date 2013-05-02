@@ -1,8 +1,8 @@
 package hawkshaw.drivers;
 
 import hawkshaw.NThreadedManagedCache;
-import hawkshaw.throttles.ConstantThrottle;
-import hawkshaw.throttles.WhiteThrottle;
+import hawkshaw.throttles.Constant;
+import hawkshaw.throttles.WhiteDist;
 
 /**
  * -XX:+PrintGCDetails -Xloggc:gc.log -XX:+PrintTenuringDistribution -Xmx5G -Xms5G
@@ -11,11 +11,11 @@ import hawkshaw.throttles.WhiteThrottle;
 public class LongPaws extends ComposableDriver {
 
     private void constantVolume() {
-        WhiteThrottle enqueue = new WhiteThrottle(seed++, 0, 1, 1);
+        WhiteDist enqueue = new WhiteDist(seed++, 0, 1, 1);
 
-        managers.add( new NThreadedManagedCache(new ConstantThrottle(Integer.MAX_VALUE), 
+        managers.add( new NThreadedManagedCache(new Constant(Integer.MAX_VALUE), 
                                                 enqueue,
-                                                new WhiteThrottle(seed++,  1, 10, KBYTE),
+                                                new WhiteDist(seed++,  1, 10, KBYTE),
                                                 2));
     }
 

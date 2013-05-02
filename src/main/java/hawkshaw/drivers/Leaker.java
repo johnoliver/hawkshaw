@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import hawkshaw.DualThreadedManagedCache;
 import hawkshaw.ManagedCache;
-import hawkshaw.throttles.ConstantThrottle;
-import hawkshaw.throttles.GammaDistThrottle;
-import hawkshaw.throttles.NeverThrottle;
+import hawkshaw.throttles.Constant;
+import hawkshaw.throttles.GammaDist;
+import hawkshaw.throttles.LongTime;
 import hawkshaw.throttles.NumberProducer;
 
 public class Leaker {
@@ -31,10 +31,10 @@ public class Leaker {
         int leakVolume = leakRate / (1000 / leakPeriodInMilliSec);// in bytes per ms
 
         // create at a constant rate
-        NumberProducer createAt = new ConstantThrottle(leakPeriodInMilliSec);
+        NumberProducer createAt = new Constant(leakPeriodInMilliSec);
 
         // never remove
-        NumberProducer deleteAt = new NeverThrottle();
+        NumberProducer deleteAt = new LongTime();
         LOGGER.debug("Starting Leaker");
 
         leaker = new DualThreadedManagedCache(deleteAt, createAt, leakVolume);
@@ -49,8 +49,8 @@ public class Leaker {
         BigInteger now = new BigInteger(Long.toString(System.currentTimeMillis()));
         BigInteger end = now.add(new BigInteger(Long.toString(runTime)));
         while (now.compareTo(end) < 0) {
-            NumberProducer createAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 2.0, 2.0);
-            NumberProducer deleteAt = GammaDistThrottle.of((int) System.currentTimeMillis(), 1.0, 2.0);
+            NumberProducer createAt = GammaDist.of((int) System.currentTimeMillis(), 2.0, 2.0);
+            NumberProducer deleteAt = GammaDist.of((int) System.currentTimeMillis(), 1.0, 2.0);
 
             ManagedCache manager = new ManagedCache(deleteAt, createAt, 1024);
             manager.startAllocation(50000);

@@ -6,13 +6,13 @@ package hawkshaw.throttles;
  * Cycles through other throttles at a fixed time period
  *
  */
-public final class CycleTimedThrottle implements NumberProducer {
+public final class TimedCycle implements NumberProducer {
 
-    private TimedThrottle[] throttles;
+    private TimedNumberProducer[] throttles;
     private int currentThrottle;
     private long timeLastThrottleStarted;
 
-    public CycleTimedThrottle(TimedThrottle... throttles) {
+    public TimedCycle(TimedNumberProducer... throttles) {
         this.throttles = throttles;
         this.currentThrottle = 0;
         this.timeLastThrottleStarted = System.currentTimeMillis();
