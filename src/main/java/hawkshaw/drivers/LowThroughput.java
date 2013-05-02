@@ -1,7 +1,6 @@
 package hawkshaw.drivers;
 
 import hawkshaw.NThreadedManagedCache;
-import hawkshaw.throttles.BurstyThrottle;
 import hawkshaw.throttles.CycleTimedThrottle;
 import hawkshaw.throttles.NeverThrottle;
 import hawkshaw.throttles.SinThrottle;
@@ -24,16 +23,16 @@ public class LowThroughput extends ComposableDriver {
     private static int seed = 123;
 
     private void neutralThrottle() {
-        managers.add( new NThreadedManagedCache(     new WhiteThrottle(seed++, 0, 100),
+        managers.add( new NThreadedManagedCache(    new WhiteThrottle(seed++, 0, 100),
                                                     new WhiteThrottle(seed++, 0, 100), 
-                                                    new WhiteThrottle(333, 1024.0 * 1024.0, 1024.0 * 1024.0, 1),
+                                                    new WhiteThrottle(333, 1, 1, MBYTE),
                                                     1));
     }
 
     private void sin() {
         managers.add( new NThreadedManagedCache(new SinThrottle(seed++, 0, 1000, 1000) ,
                                                 new SinThrottle(seed++, Math.PI, 1000, 1000) , 
-                                                new WhiteThrottle(seed++,  5, 10, 1024 * 1024),
+                                                new WhiteThrottle(seed++,  5, 10, MBYTE),
                                                 2));
     }
 
@@ -43,7 +42,7 @@ public class LowThroughput extends ComposableDriver {
 
         managers.add( new NThreadedManagedCache(    new NeverThrottle(),
                                                     new CycleTimedThrottle(warmup, steady),
-                                                    new WhiteThrottle(seed++, 5, 10, 10 * 1024),
+                                                    new WhiteThrottle(seed++, 50, 100, KBYTE),
                                                     1));
     }
 

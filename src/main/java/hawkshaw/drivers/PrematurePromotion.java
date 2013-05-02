@@ -30,7 +30,7 @@ public class PrematurePromotion extends ComposableDriver {
 
         managers.add( new NThreadedManagedCache(remove, 
                                                 enqueue,
-                                                new WhiteThrottle(seed++,  16, 20, 20 * 1024),
+                                                new WhiteThrottle(seed++,  320, 400, KBYTE),
                                                 2));
     }
 

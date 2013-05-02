@@ -12,6 +12,9 @@ public abstract class ComposableDriver implements Runnable {
     protected final List<NThreadedManagedCache> managers = new ArrayList<NThreadedManagedCache>();
     
     protected int seed = 123;
+    
+    protected static final int KBYTE = 1024;
+    protected static final int MBYTE = 1024 * 1024;
 
     @Override
     public void run() {
@@ -31,7 +34,7 @@ public abstract class ComposableDriver implements Runnable {
     protected void noise() {
         managers.add( new NThreadedManagedCache(new BurstyThrottle(seed++, 100, 1000), 
                                                 new WhiteThrottle(seed++, 10, 100), 
-                                                new WhiteThrottle(seed++, 1, 2, 1024 * 1024),
+                                                new WhiteThrottle(seed++, 1, 2, MBYTE),
                                                 2));
     }
 

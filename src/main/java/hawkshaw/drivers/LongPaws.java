@@ -15,7 +15,7 @@ public class LongPaws extends ComposableDriver {
 
         managers.add( new NThreadedManagedCache(new ConstantThrottle(Integer.MAX_VALUE), 
                                                 enqueue,
-                                                new WhiteThrottle(seed++,  1, 10, 1024),
+                                                new WhiteThrottle(seed++,  1, 10, KBYTE),
                                                 2));
     }
 

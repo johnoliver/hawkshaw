@@ -10,7 +10,7 @@ public class LeakThroughput extends ComposableDriver {
     private void leak() {
         managers.add( new NThreadedManagedCache(    new NeverThrottle(),
                                                     new WhiteThrottle(seed++, 1, 2, 1), 
-                                                    new ConstantThrottle(1024),
+                                                    new ConstantThrottle(KBYTE),
                                                     5));
     }
 
