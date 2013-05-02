@@ -13,7 +13,7 @@ import hawkshaw.throttles.WhiteDist;
  * For PP:
  *  -XX:NewRatio=2
  * For ok:
- * -XX:NewRatio=1
+ *  -XX:NewRatio=1
  * 
  * 
  * 

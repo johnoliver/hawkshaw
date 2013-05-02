@@ -12,6 +12,10 @@ import hawkshaw.throttles.GammaDist;
 import hawkshaw.throttles.LongTime;
 import hawkshaw.throttles.NumberProducer;
 
+/**
+ * A driver that constantly leaks a small ammount of memory
+ *
+ */
 public class Leaker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Leaker.class); 

@@ -5,6 +5,8 @@ import hawkshaw.throttles.NumberProducer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A managed cache that is harder to control the allocation rate but does not produce a significant number of scheduled Runnables for allocating/deallocating
@@ -18,6 +20,9 @@ public class DualThreadedManagedCache {
     private final NumberProducer collectionThrottle;
     private Thread producer;
     private Thread collector;
+
+    ReentrantLock productionLock = new ReentrantLock();
+    ReentrantLock removalLock = new ReentrantLock();
 
     private volatile boolean running = false;
     private int entryVolume;
@@ -52,7 +57,7 @@ public class DualThreadedManagedCache {
         public void run() {
             for (long i = 0; i < numToProduce; i++) {
                 cache.add(new byte[entryVolume]);
-                performWait(productionThrottle, this);
+                performWait(productionThrottle, productionLock);
 
                 if (!isRunning()) {
                     return;
@@ -70,6 +75,7 @@ public class DualThreadedManagedCache {
 
         @Override
         public void run() {
+
             while (true) {
                 // remove random one
                 if (cache.size() > 0) {
@@ -86,18 +92,20 @@ public class DualThreadedManagedCache {
                         return;
                     }
                 }
-
-                performWait(removeThrottle, this);
+                performWait(removeThrottle, removalLock);
             }
         }
     }
 
-    private void performWait(NumberProducer throttle, Object lock) {
+    private void performWait(NumberProducer throttle, ReentrantLock lock) {
         try {
             int waitTime = throttle.next();
             if (waitTime > 0) {
-                synchronized (lock) {
-                    lock.wait(0, waitTime);
+                lock.lock();
+                try {
+                    lock.newCondition().await(waitTime, TimeUnit.NANOSECONDS);
+                } finally {
+                    lock.unlock();
                 }
             }
         } catch (InterruptedException e) {
@@ -124,8 +132,18 @@ public class DualThreadedManagedCache {
 
     public void terminate() {
         setRunning(false);
-        synchronized (this) {
-            this.notifyAll();
+        productionLock.lock();
+        try { 
+            productionLock.notifyAll();
+        } finally {
+            productionLock.unlock();
+        }
+
+        removalLock.lock();
+        try { 
+            removalLock.notifyAll();
+        } finally {
+            removalLock.unlock();
         }
         join();
     }

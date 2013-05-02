@@ -8,10 +8,10 @@ import hawkshaw.throttles.WhiteDist;
 public class LeakThroughput extends ComposableDriver {
 
     private void leak() {
-        managers.add( new NThreadedManagedCache(    new LongTime(),
-                                                    new WhiteDist(seed++, 1, 2, 1), 
-                                                    new Constant(KBYTE),
-                                                    5));
+        managers.add( new NThreadedManagedCache(new LongTime(),
+                                                new WhiteDist(seed++, 1, 2, 1), 
+                                                new Constant(KBYTE),
+                                                5));
     }
 
     public LeakThroughput(long timeLimit) {

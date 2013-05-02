@@ -5,35 +5,35 @@ import cern.jet.random.engine.MersenneTwister;
 
 public final class Bursty implements NumberProducer {
 
-	private static final int SCALING_FACTOR = 1000;
-	private final MersenneTwister mt;
+    private static final int SCALING_FACTOR = 1000;
+    private final MersenneTwister mt;
 
-	private final Uniform uniform;
-	private final Uniform burstProbability;
-	private final Uniform burstLengthProbability;
-	private int burstCount = 0;
+    private final Uniform uniform;
+    private final Uniform burstProbability;
+    private final Uniform burstLengthProbability;
+    private int burstCount = 0;
 
-	public Bursty(int mtSeed, double min, double max) {
-		mt = new MersenneTwister(mtSeed);
-		uniform = new Uniform(min, max, mt);
-		burstProbability = new Uniform(0, 100, mt);
-		burstLengthProbability = new Uniform(0, 1000, mt);
-	}
+    public Bursty(int mtSeed, double min, double max) {
+        mt = new MersenneTwister(mtSeed);
+        uniform = new Uniform(min, max, mt);
+        burstProbability = new Uniform(0, 100, mt);
+        burstLengthProbability = new Uniform(0, 1000, mt);
+    }
 
-	@Override
-	public int next() {
-		int scaling = SCALING_FACTOR;
-		if (burstCount > 0) {
-			burstCount--;
-			scaling = scaling / 1000;
+    @Override
+    public int next() {
+        int scaling = SCALING_FACTOR;
+        if (burstCount > 0) {
+            burstCount--;
+            scaling = scaling / 1000;
 
-		} else {
-			if (burstProbability.nextDouble() > 95) {
-				System.out.println("burst");
-				burstCount = burstLengthProbability.nextInt();
-			}
-		}
-		return (int) (scaling * uniform.nextDouble());
-	}
+        } else {
+            if (burstProbability.nextDouble() > 95) {
+                System.out.println("burst");
+                burstCount = burstLengthProbability.nextInt();
+            }
+        }
+        return (int) (scaling * uniform.nextDouble());
+    }
 
 }

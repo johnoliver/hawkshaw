@@ -3,6 +3,10 @@ package hawkshaw.throttles;
 import cern.jet.random.Uniform;
 import cern.jet.random.engine.MersenneTwister;
 
+/**
+ * Produces numbers with a uniform distribution
+ *
+ */
 public final class WhiteDist implements NumberProducer {
 
 	private static final int SCALING_FACTOR = 1000;

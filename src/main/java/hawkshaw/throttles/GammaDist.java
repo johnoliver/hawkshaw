@@ -13,7 +13,7 @@ public final class GammaDist implements NumberProducer {
 
     // p(x) = k * x^(alpha-1) * e^(-x/beta)
     private final Gamma gpdf;
-	private double scale;
+    private double scale;
 
     private GammaDist(int mtSeed, double alpha, double beta, double scale) {
         mt = new MersenneTwister(mtSeed);
@@ -24,7 +24,7 @@ public final class GammaDist implements NumberProducer {
     public static GammaDist of(int mtSeed, double alpha, double beta) {
         return new GammaDist(mtSeed, alpha, beta, SCALING_FACTOR);
     }
-    
+
     public static GammaDist of(int mtSeed, double alpha, double beta, double scale) {
         return new GammaDist(mtSeed, alpha, beta, scale);
     }

@@ -49,8 +49,8 @@ public class NThreadedManagedCache {
     }
 
     void scheduleBy(Callable<?> task, NumberProducer throttle) {
-        int ttl = throttle.next();
-        executors.schedule(task, ttl, TimeUnit.NANOSECONDS);
+        int timeTilRemoval = throttle.next();
+        executors.schedule(task, timeTilRemoval, TimeUnit.NANOSECONDS);
     }
 
     private class ProduceKey implements Runnable {
